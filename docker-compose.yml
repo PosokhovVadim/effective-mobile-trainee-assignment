@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  base:
+    build: .
+    image: base
+  db:
+    container_name: postgres_songs_db
+    image: postgres:16.0
+    restart: always
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+  song_library_service:
+    container_name: song_library_service
+    build: 
+      context: ./cmd
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
