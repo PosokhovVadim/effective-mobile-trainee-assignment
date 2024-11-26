@@ -15,10 +15,11 @@ type App struct {
 	log   *slog.Logger
 	port  int
 	fiber *fiber.App
+	DB    *postgresql.PostgresStorage
 }
 
 func NewApp(log *slog.Logger, http config.HTTP, storage config.Storage) (*App, error) {
-	psStorage, err := postgresql.NewPostgresStorage(storage.Path)
+	psStorage, err := postgresql.NewPostgresStorage(log, storage.Path)
 	if err != nil {
 		log.Error("error creating storage: %v", logger.Err(err))
 	}
@@ -34,6 +35,7 @@ func NewApp(log *slog.Logger, http config.HTTP, storage config.Storage) (*App, e
 		log:   log,
 		port:  http.Port,
 		fiber: fiber,
+		DB:    psStorage,
 	}, nil
 }
 

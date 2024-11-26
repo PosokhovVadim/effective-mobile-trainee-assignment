@@ -36,7 +36,8 @@ func run() error {
 		log.Error("error creating app: %v", err)
 		return err
 	}
-
+	defer app.DB.Close()
+	
 	if err := app.Run(); err != nil {
 		log.Error("error running app: %v", err)
 		return err
