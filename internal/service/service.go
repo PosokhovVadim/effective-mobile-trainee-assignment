@@ -4,12 +4,14 @@ import (
 	"log/slog"
 	"songs_lib/internal/model"
 	"songs_lib/internal/storage"
+	"songs_lib/pkg/logger"
 	"strings"
 	"time"
 )
 
 type ISong interface {
 	AddSong(group, name, link string, releaseDate time.Time, text string) (uint, error)
+	DeleteSong(songID uint) error
 }
 
 type SongService struct {
@@ -39,9 +41,18 @@ func (s *SongService) AddSong(group, name, link string, releaseDate time.Time, t
 
 	songID, err := s.s.AddSong(song, verses)
 	if err != nil {
+		s.log.Error("Failed to add song", logger.Err(err))
 		return 0, err
 	}
 	return songID, nil
+}
+
+func (s *SongService) DeleteSong(songID uint) error {
+	if err := s.s.DeleteSong(songID); err != nil {
+		s.log.Error("Failed to delete song", slog.Int("song_id", int(songID)), logger.Err(err))
+		return err
+	}
+	return nil
 }
 
 func splitTextIntoVerses(text string) []string {

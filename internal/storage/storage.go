@@ -1,11 +1,15 @@
 package storage
 
 import (
-	"database/sql"
 	"songs_lib/internal/model"
 )
 
 type Storage interface {
 	AddSong(song model.Song, verses []string) (uint, error)
-	BeginTx() (*sql.Tx, error)
+	DeleteSong(songID uint) error
+	GetLyrics(songID uint) (string, error)
+	GetAllSongs() ([]model.Song, error)
+	GetAllLyrics() ([]model.Lyrics, error)
+	UpdateSong(song model.Song) error
+	UpdateLyrics(lyrics model.Lyrics) error
 }

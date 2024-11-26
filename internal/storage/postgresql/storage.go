@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"songs_lib/internal/model"
 	"songs_lib/pkg/logger"
-	"strconv"
 
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
@@ -114,7 +113,20 @@ func (s *PostgresStorage) AddSong(song model.Song, verses []string) (uint, error
 	}); err != nil {
 		return 0, err
 	}
-	s.log.Info("Song added successfully", slog.String("song_id", strconv.Itoa(int(songID))))
+	s.log.Info("Song added successfully", slog.Int("song_id", int(songID)))
 
 	return songID, nil
+}
+
+func (s *PostgresStorage) DeleteSong(songID uint) error {
+	_, err := s.db.Exec(
+		`DELETE FROM songs WHERE id = $1`,
+		songID,
+	)
+	if err != nil {
+		return err
+	}
+	s.log.Info("Song deleted successfully", slog.Int("song_id", int(songID)))
+
+	return nil
 }

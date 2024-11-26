@@ -6,6 +6,7 @@ import (
 	songService "songs_lib/internal/service"
 	web "songs_lib/internal/web/external"
 	"songs_lib/pkg/logger"
+	"strconv"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -73,7 +74,6 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 		fetchData.Text,
 	)
 	if err != nil {
-		log.Error("Failed to add song", logger.Err(err))
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to add song",
 		})
@@ -90,7 +90,23 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 }
 
 func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
-	return nil
+	param := c.Params("song_id")
+
+	songID, err := strconv.Atoi(param)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid song ID",
+		})
+	}
+	if err := h.songService.DeleteSong((uint)(songID)); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete song",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Song deleted successfully",
+	})
 }
 
 func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
