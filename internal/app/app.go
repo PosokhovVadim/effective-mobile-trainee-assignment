@@ -18,7 +18,7 @@ type App struct {
 	DB    *postgresql.PostgresStorage
 }
 
-func NewApp(log *slog.Logger, http config.HTTP, storage config.Storage) (*App, error) {
+func NewApp(log *slog.Logger, httpServer config.HTTP, storage config.Storage) (*App, error) {
 	psStorage, err := postgresql.NewPostgresStorage(log, storage.Path)
 	if err != nil {
 		log.Error("error creating storage: %v", logger.Err(err))
@@ -28,12 +28,12 @@ func NewApp(log *slog.Logger, http config.HTTP, storage config.Storage) (*App, e
 	// init service layer
 	_ = psStorage
 
-	fiber := SetupFiber(http)
+	fiber := SetupFiber(httpServer)
 	// init handler layer
 
 	return &App{
 		log:   log,
-		port:  http.Port,
+		port:  httpServer.Port,
 		fiber: fiber,
 		DB:    psStorage,
 	}, nil
