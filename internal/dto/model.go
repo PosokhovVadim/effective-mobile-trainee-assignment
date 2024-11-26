@@ -16,8 +16,13 @@ type CreateSongResponse struct {
 	Text        string    `json:"text,omitempty"`
 }
 
-type GetLyricsResponse struct {
-	SongID      uint   `json:"song_id"`
+type LyricsInfo struct {
 	VerseNumber uint   `json:"verse_number"`
 	Text        string `json:"text"`
+}
+
+type GetLyricsResponse struct {
+	SongName string       `json:"song_name"`
+	Group    string       `json:"group"`
+	Verses   []LyricsInfo `json:"verses"`
 }

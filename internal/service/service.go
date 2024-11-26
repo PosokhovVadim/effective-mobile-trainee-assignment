@@ -14,6 +14,7 @@ type ISong interface {
 	AddSong(group, name, link string, releaseDate time.Time, text string) (uint, error)
 	DeleteSong(songID uint) error
 	GetLyrics(songID uint, limit, offset string) ([]model.Lyrics, error)
+	GetSong(songID uint) (*model.Song, error)
 }
 
 type SongService struct {
@@ -80,7 +81,19 @@ func (s *SongService) GetLyrics(songID uint, limit, offset string) ([]model.Lyri
 		s.log.Error("Failed to get lyrics", logger.Err(err))
 		return nil, err
 	}
+
 	return lyrics, nil
+}
+
+func (s *SongService) GetSong(songID uint) (*model.Song, error) {
+	song, err := s.s.GetSong(songID)
+	if err != nil {
+		s.log.Error("Failed to get song", logger.Err(err))
+		return nil, err
+	}
+
+	return song, nil
+
 }
 
 func splitTextIntoVerses(text string) []string {

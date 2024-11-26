@@ -159,3 +159,20 @@ func (s *PostgresStorage) GetLyrics(songID uint, limit, offset int) ([]model.Lyr
 
 	return lyrics, nil
 }
+
+func (s *PostgresStorage) GetSong(songID uint) (*model.Song, error) {
+	song := &model.Song{}
+	err := s.db.QueryRow(
+		`SELECT id, group_name, name, link, release_date, inserted_at 
+         FROM songs 
+         WHERE id = $1`,
+		songID,
+	).Scan(
+		&song.ID, &song.Group, &song.Name, &song.Link, &song.ReleaseDate, &song.InsertedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return song, nil
+}
