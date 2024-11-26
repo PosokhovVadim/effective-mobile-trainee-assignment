@@ -16,12 +16,10 @@ type PostgresStorage struct {
 }
 
 func NewPostgresStorage(log *slog.Logger, path string) (*PostgresStorage, error) {
-	// connect to storage
 	db, err := sql.Open("postgres", path)
 	if err != nil {
 		return nil, err
 	}
-
 	if err := runMigrations(db); err != nil {
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}

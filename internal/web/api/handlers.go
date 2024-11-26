@@ -6,6 +6,7 @@ import (
 	songService "songs_lib/internal/service"
 	web "songs_lib/internal/web/external"
 	"songs_lib/pkg/logger"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 
@@ -14,16 +15,21 @@ import (
 )
 
 type SongsHandlers struct {
-	songService songService.SongService
+	songService songService.ISong
 	log         *slog.Logger
 	validate    *validator.Validate
+	externalAPI string
 }
 
-func NewSongsHandlers(log *slog.Logger, songService songService.SongService) *SongsHandlers {
+func NewSongsHandlers(log *slog.Logger,
+	songService songService.ISong,
+	externalAPI string,
+) *SongsHandlers {
 	return &SongsHandlers{
 		songService: songService,
 		log:         log,
 		validate:    validator.New(),
+		externalAPI: externalAPI,
 	}
 }
 
@@ -43,8 +49,7 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 		})
 	}
 
-	//TODO:
-	fetchData, err := web.FetchSongs()
+	fetchData, err := web.FetchSong(h.externalAPI, req.Group, req.Name)
 	if err != nil {
 		log.Debug("Failed to fetch song data", logger.Err(err))
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -52,11 +57,19 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 		})
 	}
 
+	releaseDate, err := time.Parse("2006-01-02", fetchData.ReleaseDate)
+	if err != nil {
+		log.Debug("Failed to parse release date", logger.Err(err))
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to parse release date",
+		})
+	}
+
 	if err := h.songService.AddSong(
 		req.Group,
 		req.Name,
 		fetchData.Link,
-		fetchData.ReleaseDate,
+		releaseDate,
 		fetchData.Text,
 	); err != nil {
 		log.Error("Failed to add song", logger.Err(err))

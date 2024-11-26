@@ -20,7 +20,7 @@ type App struct {
 	DB    *postgresql.PostgresStorage
 }
 
-func NewApp(log *slog.Logger, httpServer config.HTTP, storage config.Storage) (*App, error) {
+func NewApp(log *slog.Logger, httpServer config.HTTP, storage config.Storage, externalAPI string) (*App, error) {
 	psStorage, err := postgresql.NewPostgresStorage(log, storage.Path)
 	if err != nil {
 		log.Error("error creating storage: %v", logger.Err(err))
@@ -29,7 +29,7 @@ func NewApp(log *slog.Logger, httpServer config.HTTP, storage config.Storage) (*
 	log.Debug("Storage setup successfully by path ", slog.String("path", storage.Path))
 
 	songService := service.NewSongService(log, psStorage)
-	songsHandlers := web.NewSongsHandlers(log, songService)
+	songsHandlers := web.NewSongsHandlers(log, songService, externalAPI)
 
 	fiber := SetupFiber(httpServer)
 

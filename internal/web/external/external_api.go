@@ -7,13 +7,17 @@ import (
 	"net/http"
 )
 
+type ExternalAPI struct {
+
+}
+
 type FetchData struct {
 	Link        string `json:"link"`
 	ReleaseDate string `json:"releaseDate"`
 	Text        string `json:"text"`
 }
 
-func FetchSongs(externalAPI, group, song string) (*FetchData, error) {
+func FetchSong(externalAPI, group, song string) (*FetchData, error) {
 	url := fmt.Sprintf("%s/info?group=%s&song=%s", externalAPI, group, song)
 	resp, err := http.Get(url)
 	if err != nil {
