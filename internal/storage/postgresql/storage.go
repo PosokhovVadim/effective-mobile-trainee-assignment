@@ -130,3 +130,32 @@ func (s *PostgresStorage) DeleteSong(songID uint) error {
 
 	return nil
 }
+
+func (s *PostgresStorage) GetLyrics(songID uint, limit, offset int) ([]model.Lyrics, error) {
+	rows, err := s.db.Query(
+		`SELECT song_id, verse_number, text FROM lyrics 
+         WHERE song_id = $1 
+         ORDER BY verse_number 
+         LIMIT $2 OFFSET $3`,
+		songID, limit, offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lyrics []model.Lyrics
+	for rows.Next() {
+		var lyric model.Lyrics
+		if err := rows.Scan(&lyric.SongID, &lyric.VerseNumber, &lyric.Text); err != nil {
+			return nil, err
+		}
+		lyrics = append(lyrics, lyric)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return lyrics, nil
+}

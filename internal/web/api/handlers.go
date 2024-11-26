@@ -110,7 +110,28 @@ func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
 }
 
 func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
-	return nil
+	param := c.Params("song_id")
+
+	songID, err := strconv.Atoi(param)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid song ID",
+		})
+	}
+
+	queryParams := c.Queries()
+	lyrics, err := h.songService.GetLyrics(
+		(uint)(songID),
+		queryParams["limit"],
+		queryParams["offset"],
+	)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get lyrics",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(lyrics)
 }
 
 func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {

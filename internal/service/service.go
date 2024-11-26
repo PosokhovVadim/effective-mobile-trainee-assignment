@@ -5,6 +5,7 @@ import (
 	"songs_lib/internal/model"
 	"songs_lib/internal/storage"
 	"songs_lib/pkg/logger"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -12,6 +13,7 @@ import (
 type ISong interface {
 	AddSong(group, name, link string, releaseDate time.Time, text string) (uint, error)
 	DeleteSong(songID uint) error
+	GetLyrics(songID uint, limit, offset string) ([]model.Lyrics, error)
 }
 
 type SongService struct {
@@ -53,6 +55,32 @@ func (s *SongService) DeleteSong(songID uint) error {
 		return err
 	}
 	return nil
+}
+
+func (s *SongService) GetLyrics(songID uint, limit, offset string) ([]model.Lyrics, error) {
+	if limit == "" {
+		limit = "10"
+	}
+	if offset == "" {
+		offset = "0"
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		s.log.Error("Failed to convert limit to int", logger.Err(err))
+		return nil, err
+	}
+	offsetInt, err := strconv.Atoi(offset)
+	if err != nil {
+		s.log.Error("Failed to convert offset to int", logger.Err(err))
+		return nil, err
+	}
+
+	lyrics, err := s.s.GetLyrics(songID, limitInt, offsetInt)
+	if err != nil {
+		s.log.Error("Failed to get lyrics", logger.Err(err))
+		return nil, err
+	}
+	return lyrics, nil
 }
 
 func splitTextIntoVerses(text string) []string {
