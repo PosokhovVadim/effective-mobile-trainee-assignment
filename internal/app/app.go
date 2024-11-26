@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"songs_lib/config"
+	"songs_lib/internal/storage/postgresql"
 	"songs_lib/pkg/logger"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,15 +13,19 @@ import (
 
 type App struct {
 	log   *slog.Logger
-	host  string
 	port  int
 	fiber *fiber.App
 }
 
 func NewApp(log *slog.Logger, http config.HTTP, storage config.Storage) (*App, error) {
-	// init storage layer
+	psStorage, err := postgresql.NewPostgresStorage(storage.Path)
+	if err != nil {
+		log.Error("error creating storage: %v", logger.Err(err))
+	}
+	log.Debug("Storage setup successfully by path ", slog.String("path", storage.Path))
 
 	// init service layer
+	_ = psStorage
 
 	fiber := SetupFiber(http)
 	// init handler layer
