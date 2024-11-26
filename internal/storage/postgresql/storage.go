@@ -62,3 +62,7 @@ func runMigrations(db *sql.DB) error {
 	return nil
 
 }
+
+func (s *PostgresStorage) AddSong() {
+
+}

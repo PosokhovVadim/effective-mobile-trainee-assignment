@@ -14,6 +14,7 @@ type CreateSongResponse struct {
 	ReleaseDate time.Time `json:"release_date"`
 	Link        string    `json:"link,omitempty"`
 	InsertedAt  time.Time `json:"inserted_at"`
+	Text        string    `json:"text,omitempty"`
 }
 
 type GetLyricsResponse struct {
