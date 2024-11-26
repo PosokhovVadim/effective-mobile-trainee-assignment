@@ -65,20 +65,28 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.songService.AddSong(
+	id, err := h.songService.AddSong(
 		req.Group,
 		req.Name,
 		fetchData.Link,
 		releaseDate,
 		fetchData.Text,
-	); err != nil {
+	)
+	if err != nil {
 		log.Error("Failed to add song", logger.Err(err))
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to add song",
 		})
 	}
 
-	return nil
+	return c.Status(fiber.StatusOK).JSON(dto.CreateSongResponse{
+		ID:          id,
+		Group:       req.Group,
+		Name:        req.Name,
+		ReleaseDate: releaseDate,
+		Link:        fetchData.Link,
+		Text:        fetchData.Text,
+	})
 }
 
 func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {

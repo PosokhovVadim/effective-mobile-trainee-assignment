@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"songs_lib/internal/model"
+	"songs_lib/pkg/logger"
+	"strconv"
 
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
@@ -37,6 +40,10 @@ func (s *PostgresStorage) Close() error {
 	return nil
 }
 
+func (p *PostgresStorage) BeginTx() (*sql.Tx, error) {
+	return p.db.Begin()
+}
+
 func runMigrations(db *sql.DB) error {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
@@ -60,7 +67,54 @@ func runMigrations(db *sql.DB) error {
 	return nil
 
 }
+func (s *PostgresStorage) WithTransaction(fn func(tx *sql.Tx) error) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
 
-func (s *PostgresStorage) AddSong() {
+	if err := fn(tx); err != nil {
+		s.log.Error("Transaction failed", logger.Err(err))
+		tx.Rollback()
+		return err
+	}
 
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PostgresStorage) AddSong(song model.Song, verses []string) (uint, error) {
+	var songID uint
+
+	if err := s.WithTransaction(func(tx *sql.Tx) error {
+		err := tx.QueryRow(
+			`INSERT INTO songs (group_name, name, link, release_date, inserted_at) 
+             VALUES ($1, $2, $3, $4, NOW()) 
+             RETURNING id`,
+			song.Group, song.Name, song.Link, song.ReleaseDate,
+		).Scan(&songID)
+		if err != nil {
+			return err
+		}
+
+		for i, verse := range verses {
+			_, err = tx.Exec(
+				`INSERT INTO verses (song_id, verse_number, verse_text) 
+                 VALUES ($1, $2, $3)`,
+				songID, i+1, verse,
+			)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+	s.log.Info("Song added successfully", slog.String("song_id", strconv.Itoa(int(songID))))
+
+	return songID, nil
 }
