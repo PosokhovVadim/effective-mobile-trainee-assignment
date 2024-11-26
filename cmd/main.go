@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"songs_lib/config"
+	"songs_lib/internal/app"
 	"songs_lib/pkg/logger"
 
 	"github.com/joho/godotenv"
@@ -28,13 +29,18 @@ func run() error {
 		return fmt.Errorf("error setup logger: %v", err)
 	}
 
-	log.Info("logger setup success")
-
 	log.Info("Config read success")
 
-	// init app lay
+	app, err := app.NewApp(log, cfg.HTTP, cfg.Storage)
+	if err != nil {
+		log.Error("error creating app: %v", err)
+		return err
+	}
 
-	// run server
+	if err := app.Run(); err != nil {
+		log.Error("error running app: %v", err)
+		return err
+	}
 
 	return nil
 

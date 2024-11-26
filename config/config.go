@@ -10,7 +10,6 @@ type Config struct {
 }
 
 type HTTP struct {
-	Host    string        `env:"HOST" required:"true"`
 	Port    int           `env:"PORT" required:"true"`
 	Timeout time.Duration `env:"TIMEOUT" envDefault:"5s"`
 }
