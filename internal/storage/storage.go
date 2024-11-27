@@ -1,7 +1,12 @@
 package storage
 
 import (
+	"errors"
 	"songs_lib/internal/model"
+)
+
+var (
+	ErrSongNotFound = errors.New("song not found")
 )
 
 type Storage interface {

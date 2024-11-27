@@ -1,10 +1,12 @@
 package web
 
 import (
+	"errors"
 	"log/slog"
 	"songs_lib/internal/dto"
 	"songs_lib/internal/model"
 	songService "songs_lib/internal/service"
+	"songs_lib/internal/storage"
 	web "songs_lib/internal/web/external"
 	"songs_lib/pkg/logger"
 	"strconv"
@@ -109,13 +111,13 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 // @Tags Songs
 // @Accept  json
 // @Produce  json
-// @Param song_id path int true "Song id"
+// @Param id path int true "Song id"
 // @Success 204 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
-// @Router /api/v1/songs/{song_id} [delete]
+// @Router /api/v1/song/{id} [delete]
 func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
-	param := c.Params("song_id")
+	param := c.Params("id")
 
 	songID, err := strconv.Atoi(param)
 	if err != nil {
@@ -124,6 +126,11 @@ func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
 		})
 	}
 	if err := h.songService.DeleteSong((uint)(songID)); err != nil {
+		if errors.Is(err, storage.ErrSongNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "Song not found",
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to delete song",
 		})
@@ -136,7 +143,7 @@ func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
 // @Description Получение текста песни с пагинацией по куплетам
 // @ID get-lyrics
 // @Tags Lyrics
-// @Param song_id path int true "Song ID"
+// @Param id path int true "Song ID"
 // @Param limit query int false "Количество куплетов"
 // @Param offset query int false "Смещение для пагинации"
 // @Success 200 {array} dto.SongDTO

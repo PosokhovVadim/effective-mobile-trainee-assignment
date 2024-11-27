@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"songs_lib/internal/model"
+	"songs_lib/internal/storage"
 	"songs_lib/pkg/logger"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -125,13 +126,23 @@ func (s *PostgresStorage) AddSong(song model.Song, verses []string) (uint, error
 }
 
 func (s *PostgresStorage) DeleteSong(songID uint) error {
-	_, err := s.db.Exec(
+	result, err := s.db.Exec(
 		`DELETE FROM songs WHERE id = $1`,
 		songID,
 	)
 	if err != nil {
 		return err
 	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return storage.ErrSongNotFound
+	}
+
 	s.log.Info("Song deleted successfully", slog.Int("song_id", int(songID)))
 
 	return nil
@@ -171,8 +182,8 @@ func (s *PostgresStorage) GetAllSongs(
 		var song model.Song
 		if err := rows.Scan(
 			&song.ID, &song.Group,
-			&song.Name, &song.Link,
-			&song.ReleaseDate, &song.InsertedAt,
+			&song.Name, &song.ReleaseDate,
+			&song.Link, &song.InsertedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -220,6 +231,7 @@ func (s *PostgresStorage) GetAllSongLyrics(songID uint) ([]model.Lyrics, error) 
 		`SELECT song_id, verse_number, text FROM lyrics 
 		 WHERE song_id = $1
 		 ORDER BY song_id, verse_number`,
+		songID,
 	)
 	if err != nil {
 		return nil, err
@@ -253,19 +265,19 @@ func (s *PostgresStorage) buildSongQuery(
 	var args []interface{}
 	argIndex := 1
 
-	if group, ok := filters["group"]; ok {
+	if group, ok := filters["group"]; ok && group != "" {
 		query += fmt.Sprintf(" AND group_name ILIKE $%d", argIndex)
 		args = append(args, "%"+group+"%")
 		argIndex++
 	}
 
-	if name, ok := filters["name"]; ok {
+	if name, ok := filters["name"]; ok && name != "" {
 		query += fmt.Sprintf(" AND name ILIKE $%d", argIndex)
 		args = append(args, "%"+name+"%")
 		argIndex++
 	}
 
-	if releaseDate, ok := filters["release_date"]; ok {
+	if releaseDate, ok := filters["release_date"]; ok && releaseDate != "" {
 		query += fmt.Sprintf(" AND release_date = $%d", argIndex)
 		args = append(args, releaseDate)
 		argIndex++
@@ -286,8 +298,7 @@ func (s *PostgresStorage) UpdateSong(songID uint, updates model.SongUpdate) erro
 	}
 
 	if songQuery != "" {
-		var id uint
-		err := s.db.QueryRow(songQuery, songArgs...).Scan(&id)
+		_, err := s.db.Exec(songQuery, songArgs...)
 		if err != nil {
 			return fmt.Errorf("failed to update song: %w", err)
 		}
@@ -335,7 +346,7 @@ func (s *PostgresStorage) buildUpdateSongQuery(songID uint, updates model.SongUp
 		argIndex++
 		updatesApplied = true
 	}
-
+	s.log.Debug("Song query", slog.String("query", query), slog.Any("args", args))
 	if !updatesApplied {
 		return "", nil, fmt.Errorf("no valid fields to update")
 	}
@@ -343,7 +354,6 @@ func (s *PostgresStorage) buildUpdateSongQuery(songID uint, updates model.SongUp
 	query = query[:len(query)-2]
 	query += fmt.Sprintf(" WHERE id = $%d RETURNING id", argIndex)
 	args = append(args, songID)
-
 	return query, args, nil
 }
 
@@ -357,7 +367,7 @@ func (s *PostgresStorage) buildUpdateVerseQuery(songID uint, verses map[uint]str
 	}
 
 	for verseNumber, text := range verses {
-		query := "UPDATE verses SET verse_text = $1 WHERE song_id = $2 AND verse_number = $3"
+		query := "UPDATE lyrics SET text = $1 WHERE song_id = $2 AND verse_number = $3"
 		args := []interface{}{text, songID, verseNumber}
 		queries = append(queries, struct {
 			Query string
