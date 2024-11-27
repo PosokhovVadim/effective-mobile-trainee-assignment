@@ -24,4 +24,4 @@ EXTERNALAPI=http://172.17.0.1:8081
 # Update handler
 Please use numerical values instead of additionalProp, as shown in the example.
 
-![alt text](image-1.png)
+![alt text](image.png)
