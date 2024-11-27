@@ -16,6 +16,7 @@ type ISong interface {
 	DeleteSong(songID uint) error
 	GetLyrics(songID uint, limit, offset string) (*dto.SongDTO, error)
 	GetLibrary(filters map[string]string, limit, offset string) (*dto.LibraryDTO, error)
+	UpdateSong(songID uint, updates model.SongUpdate) (*dto.SongDTO, error)
 }
 
 type SongService struct {
@@ -119,6 +120,30 @@ func (s *SongService) GetLibrary(
 	}
 
 	return &dto.LibraryDTO{Songs: songsDTO}, nil
+}
+
+func (s *SongService) UpdateSong(songID uint, updates model.SongUpdate) (*dto.SongDTO, error) {
+	err := s.s.UpdateSong(songID, updates)
+	if err != nil {
+		s.log.Error("Failed to update song", logger.Err(err))
+		return nil, err
+	}
+
+	song, err := s.s.GetSong(songID)
+	if err != nil {
+		s.log.Error("Failed to get song", logger.Err(err))
+		return nil, err
+	}
+
+	lyrics, err := s.s.GetAllSongLyrics(songID)
+	if err != nil {
+		s.log.Error("Failed to get song lyrics", logger.Err(err))
+		return nil, err
+	}
+
+	updatedSong := dto.SongToDTO(*song, lyrics)
+
+	return &updatedSong, nil
 }
 
 func splitTextIntoVerses(text string) []string {

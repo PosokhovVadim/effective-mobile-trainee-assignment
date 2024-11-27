@@ -11,6 +11,5 @@ type Storage interface {
 	GetSong(songID uint) (*model.Song, error)
 	GetAllSongs(filters map[string]string, limit, offset int) ([]model.Song, error)
 	GetAllSongLyrics(songID uint) ([]model.Lyrics, error)
-	UpdateSong(song model.Song) error
-	UpdateLyrics(lyrics model.Lyrics) error
+	UpdateSong(songID uint, updates model.SongUpdate) error
 }

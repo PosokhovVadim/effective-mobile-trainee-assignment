@@ -272,3 +272,95 @@ func (s *PostgresStorage) buildSongQuery(
 
 	return query, args
 }
+
+func (s *PostgresStorage) UpdateSong(songID uint, updates model.SongUpdate) error {
+	songQuery, songArgs, err := s.buildUpdateSongQuery(songID, updates)
+	if err != nil && len(updates.Verses) == 0 {
+		return err
+	}
+
+	if songQuery != "" {
+		var id uint
+		err := s.db.QueryRow(songQuery, songArgs...).Scan(&id)
+		if err != nil {
+			return fmt.Errorf("failed to update song: %w", err)
+		}
+	}
+
+	verseQueries := s.buildUpdateVerseQuery(songID, updates.Verses)
+
+	for _, q := range verseQueries {
+		_, err := s.db.Exec(q.Query, q.Args...)
+		if err != nil {
+			return fmt.Errorf("failed to update verse: %w", err)
+		}
+	}
+	s.log.Info("Song updated successfully", slog.Int("song_id", int(songID)))
+	return nil
+}
+
+func (s *PostgresStorage) buildUpdateSongQuery(songID uint, updates model.SongUpdate) (string, []interface{}, error) {
+	query := "UPDATE songs SET "
+	var args []interface{}
+	argIndex := 1
+	updatesApplied := false
+
+	if updates.Group != "" {
+		query += fmt.Sprintf("group_name = $%d, ", argIndex)
+		args = append(args, updates.Group)
+		argIndex++
+		updatesApplied = true
+	}
+	if updates.Name != "" {
+		query += fmt.Sprintf("name = $%d, ", argIndex)
+		args = append(args, updates.Name)
+		argIndex++
+		updatesApplied = true
+	}
+	if updates.ReleaseDate != "" {
+		query += fmt.Sprintf("release_date = $%d, ", argIndex)
+		args = append(args, updates.ReleaseDate)
+		argIndex++
+		updatesApplied = true
+	}
+	if updates.Link != "" {
+		query += fmt.Sprintf("link = $%d, ", argIndex)
+		args = append(args, updates.Link)
+		argIndex++
+		updatesApplied = true
+	}
+
+	if !updatesApplied {
+		return "", nil, fmt.Errorf("no valid fields to update")
+	}
+
+	query = query[:len(query)-2]
+	query += fmt.Sprintf(" WHERE id = $%d RETURNING id", argIndex)
+	args = append(args, songID)
+
+	return query, args, nil
+}
+
+func (s *PostgresStorage) buildUpdateVerseQuery(songID uint, verses map[uint]string) []struct {
+	Query string
+	Args  []interface{}
+} {
+	var queries []struct {
+		Query string
+		Args  []interface{}
+	}
+
+	for verseNumber, text := range verses {
+		query := "UPDATE verses SET verse_text = $1 WHERE song_id = $2 AND verse_number = $3"
+		args := []interface{}{text, songID, verseNumber}
+		queries = append(queries, struct {
+			Query string
+			Args  []interface{}
+		}{
+			Query: query,
+			Args:  args,
+		})
+	}
+
+	return queries
+}

@@ -3,6 +3,7 @@ package web
 import (
 	"log/slog"
 	"songs_lib/internal/dto"
+	"songs_lib/internal/model"
 	songService "songs_lib/internal/service"
 	web "songs_lib/internal/web/external"
 	"songs_lib/pkg/logger"
@@ -134,7 +135,33 @@ func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
 }
 
 func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {
-	return nil
+	param := c.Params("id")
+
+	var updates model.SongUpdate
+	if err := c.BodyParser(&updates); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	songID, err := strconv.Atoi(param)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid song ID",
+		})
+	}
+
+	updatedID, err := h.songService.UpdateSong(uint(songID), updates)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to update song",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"id": updatedID,
+	})
+
 }
 
 func (h *SongsHandlers) GetLibrary(c *fiber.Ctx) error {
