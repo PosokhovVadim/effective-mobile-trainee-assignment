@@ -45,8 +45,8 @@ func NewSongsHandlers(log *slog.Logger,
 // @Produce  json
 // @Param song body dto.CreateSongRequest true "Song"
 // @Success 201 {object} dto.CreateSongResponse
-// @Failure 400 {object} fiber.Map
-// @Failure 500 {object} fiber.Map
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
 // @Router /api/v1/song [post]
 func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 	var req dto.CreateSongRequest
@@ -110,9 +110,9 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 // @Accept  json
 // @Produce  json
 // @Param song_id path int true "Song id"
-// @Success 204 {object} fiber.Map
-// @Failure 400 {object} fiber.Map
-// @Failure 500 {object} fiber.Map
+// @Success 204 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
 // @Router /api/v1/songs/{song_id} [delete]
 func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
 	param := c.Params("song_id")
@@ -139,9 +139,9 @@ func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
 // @Param song_id path int true "Song ID"
 // @Param limit query int false "Количество куплетов"
 // @Param offset query int false "Смещение для пагинации"
-// @Success 200 {array} dto.LyricsInfo
-// @Failure 400 {object} fiber.Map
-// @Failure 500 {object} fiber.Map
+// @Success 200 {array} dto.SongDTO
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
 // @Router /api/v1/lyrics/{id} [get]
 func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
 	param := c.Params("song_id")
@@ -175,9 +175,9 @@ func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path int true "Song ID"
 // @Param updates body model.SongUpdate true "Updated Fields"
-// @Success 204 {object} fiber.Map
-// @Failure 400 {object} fiber.Map
-// @Failure 500 {object} fiber.Map
+// @Success 204 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
 // @Router /api/v1/song/{id} [put]
 func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {
 	param := c.Params("id")
@@ -215,9 +215,9 @@ func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {
 // @Param release_date query string false "Дата релиза"
 // @Param limit query int false "Количество записей на странице"
 // @Param offset query int false "Смещение для пагинации"
-// @Success 200 {object} dto.LibraryResponse
-// @Failure 400 {object} fiber.Map
-// @Failure 500 {object} fiber.Map
+// @Success 200 {object} dto.LibraryDTO
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
 // @Router /api/v1/library [get]
 func (h *SongsHandlers) GetLibrary(c *fiber.Ctx) error {
 	queryParams := c.Queries()

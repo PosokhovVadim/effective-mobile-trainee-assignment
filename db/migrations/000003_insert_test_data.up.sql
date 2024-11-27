@@ -4,7 +4,7 @@ VALUES ('Imagine Dragons', 'Radioactive', 'https://www.youtube.com/watch?v=ktvTq
        ('The 1975', 'The Sound', 'https://www.youtube.com/watch?v=-xKKo7CPHqc', '2016-02-25', NOW())
 ON CONFLICT (group_name, name) DO NOTHING;
 
-INSERT INTO verses (song_id, verse_number, verse_text)
+INSERT INTO lyrics (song_id, verse_number, text)
 VALUES (1, 1, 'I raise my flags dye my clothes'),
        (1, 2, 'It s a revolution, I suppose'),
        (2, 1, 'And it s been two years I haven t seen her'),

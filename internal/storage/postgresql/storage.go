@@ -8,8 +8,9 @@ import (
 	"songs_lib/internal/model"
 	"songs_lib/pkg/logger"
 
-	"github.com/golang-migrate/migrate"
-	"github.com/golang-migrate/migrate/database/postgres"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 type PostgresStorage struct {
@@ -66,6 +67,7 @@ func runMigrations(db *sql.DB) error {
 	return nil
 
 }
+
 func (s *PostgresStorage) WithTransaction(fn func(tx *sql.Tx) error) error {
 	tx, err := s.db.Begin()
 	if err != nil {

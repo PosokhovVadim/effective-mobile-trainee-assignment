@@ -1,4 +1,264 @@
+definitions:
+  dto.CreateSongRequest:
+    properties:
+      group:
+        type: string
+      name:
+        type: string
+    required:
+    - group
+    - name
+    type: object
+  dto.CreateSongResponse:
+    properties:
+      group:
+        type: string
+      id:
+        type: integer
+      link:
+        type: string
+      name:
+        type: string
+      release_date:
+        type: string
+      text:
+        type: string
+    type: object
+  dto.LibraryDTO:
+    properties:
+      songs:
+        items:
+          $ref: '#/definitions/dto.SongDTO'
+        type: array
+    type: object
+  dto.LyricsDTO:
+    properties:
+      text:
+        type: string
+      verse_number:
+        type: integer
+    type: object
+  dto.SongDTO:
+    properties:
+      group:
+        type: string
+      id:
+        type: integer
+      inserted_at:
+        type: string
+      link:
+        type: string
+      name:
+        type: string
+      release_date:
+        type: string
+      verses:
+        items:
+          $ref: '#/definitions/dto.LyricsDTO'
+        type: array
+    type: object
+  model.SongUpdate:
+    properties:
+      group:
+        type: string
+      link:
+        type: string
+      name:
+        type: string
+      release_date:
+        type: string
+      verses:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
 info:
   contact: {}
-paths: {}
+paths:
+  /api/v1/library:
+    get:
+      description: Получение списка песен с фильтрацией и пагинацией
+      operationId: get-library
+      parameters:
+      - description: Название группы
+        in: query
+        name: group
+        type: string
+      - description: Название песни
+        in: query
+        name: name
+        type: string
+      - description: Дата релиза
+        in: query
+        name: release_date
+        type: string
+      - description: Количество записей на странице
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение для пагинации
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LibraryDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получение библиотеки песен
+      tags:
+      - Songs
+  /api/v1/lyrics/{id}:
+    get:
+      description: Получение текста песни с пагинацией по куплетам
+      operationId: get-lyrics
+      parameters:
+      - description: Song ID
+        in: path
+        name: song_id
+        required: true
+        type: integer
+      - description: Количество куплетов
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение для пагинации
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.SongDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получение текста песни
+      tags:
+      - Lyrics
+  /api/v1/song:
+    post:
+      consumes:
+      - application/json
+      description: Добавление песни с указаым названием и группой
+      operationId: add-song
+      parameters:
+      - description: Song
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSongRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateSongResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Добавление песни
+      tags:
+      - songs
+  /api/v1/song/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Обновление полей песни и текста куплетов
+      operationId: update-song
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Fields
+        in: body
+        name: updates
+        required: true
+        schema:
+          $ref: '#/definitions/model.SongUpdate'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Обновление песни
+      tags:
+      - Songs
+  /api/v1/songs/{song_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удалене песни по id
+      operationId: delete-song
+      parameters:
+      - description: Song id
+        in: path
+        name: song_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Удаление песни
+      tags:
+      - songs
 swagger: "2.0"
