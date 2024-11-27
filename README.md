@@ -1,6 +1,7 @@
 # effective-mobile-trainee-assignment
 # Example environment variables
 
+```env
 # Docker
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
