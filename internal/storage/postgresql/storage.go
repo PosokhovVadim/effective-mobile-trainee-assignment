@@ -131,6 +131,50 @@ func (s *PostgresStorage) DeleteSong(songID uint) error {
 	return nil
 }
 
+func (s *PostgresStorage) GetSong(songID uint) (*model.Song, error) {
+	song := &model.Song{}
+	err := s.db.QueryRow(
+		`SELECT id, group_name, name, link, release_date, inserted_at 
+         FROM songs 
+         WHERE id = $1`,
+		songID,
+	).Scan(
+		&song.ID, &song.Group, &song.Name, &song.Link, &song.ReleaseDate, &song.InsertedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return song, nil
+}
+
+func (s *PostgresStorage) GetAllSongs() ([]model.Song, error) {
+	rows, err := s.db.Query(
+		`SELECT id, group_name, name, link, release_date, inserted_at 
+         FROM songs 
+         ORDER BY inserted_at DESC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var songs []model.Song
+	for rows.Next() {
+		var song model.Song
+		if err := rows.Scan(&song.ID, &song.Group, &song.Name, &song.Link, &song.ReleaseDate, &song.InsertedAt); err != nil {
+			return nil, err
+		}
+		songs = append(songs, song)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return songs, nil
+}
+
 func (s *PostgresStorage) GetLyrics(songID uint, limit, offset int) ([]model.Lyrics, error) {
 	rows, err := s.db.Query(
 		`SELECT song_id, verse_number, text FROM lyrics 
@@ -160,19 +204,29 @@ func (s *PostgresStorage) GetLyrics(songID uint, limit, offset int) ([]model.Lyr
 	return lyrics, nil
 }
 
-func (s *PostgresStorage) GetSong(songID uint) (*model.Song, error) {
-	song := &model.Song{}
-	err := s.db.QueryRow(
-		`SELECT id, group_name, name, link, release_date, inserted_at 
-         FROM songs 
-         WHERE id = $1`,
-		songID,
-	).Scan(
-		&song.ID, &song.Group, &song.Name, &song.Link, &song.ReleaseDate, &song.InsertedAt,
+func (s *PostgresStorage) GetAllSongLyrics(songID uint) ([]model.Lyrics, error) {
+	rows, err := s.db.Query(
+		`SELECT song_id, verse_number, text FROM lyrics 
+		 WHERE song_id = $1
+		 ORDER BY song_id, verse_number`,
 	)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	return song, nil
+	var lyrics []model.Lyrics
+	for rows.Next() {
+		var lyric model.Lyrics
+		if err := rows.Scan(&lyric.SongID, &lyric.VerseNumber, &lyric.Text); err != nil {
+			return nil, err
+		}
+		lyrics = append(lyrics, lyric)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return lyrics, nil
 }

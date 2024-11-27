@@ -2,6 +2,7 @@ package service
 
 import (
 	"log/slog"
+	"songs_lib/internal/dto"
 	"songs_lib/internal/model"
 	"songs_lib/internal/storage"
 	"songs_lib/pkg/logger"
@@ -13,8 +14,8 @@ import (
 type ISong interface {
 	AddSong(group, name, link string, releaseDate time.Time, text string) (uint, error)
 	DeleteSong(songID uint) error
-	GetLyrics(songID uint, limit, offset string) ([]model.Lyrics, error)
-	GetSong(songID uint) (*model.Song, error)
+	GetLyrics(songID uint, limit, offset string) (*dto.SongDTO, error)
+	GetLibrary() (*dto.LibraryDTO, error)
 }
 
 type SongService struct {
@@ -58,7 +59,7 @@ func (s *SongService) DeleteSong(songID uint) error {
 	return nil
 }
 
-func (s *SongService) GetLyrics(songID uint, limit, offset string) ([]model.Lyrics, error) {
+func (s *SongService) GetLyrics(songID uint, limit, offset string) (*dto.SongDTO, error) {
 	if limit == "" {
 		limit = "10"
 	}
@@ -76,24 +77,53 @@ func (s *SongService) GetLyrics(songID uint, limit, offset string) ([]model.Lyri
 		return nil, err
 	}
 
-	lyrics, err := s.s.GetLyrics(songID, limitInt, offsetInt)
-	if err != nil {
-		s.log.Error("Failed to get lyrics", logger.Err(err))
-		return nil, err
-	}
-
-	return lyrics, nil
-}
-
-func (s *SongService) GetSong(songID uint) (*model.Song, error) {
 	song, err := s.s.GetSong(songID)
 	if err != nil {
 		s.log.Error("Failed to get song", logger.Err(err))
 		return nil, err
 	}
 
-	return song, nil
+	lyrics, err := s.s.GetLyrics(songID, limitInt, offsetInt)
+	if err != nil {
+		s.log.Error("Failed to get lyrics", logger.Err(err))
+		return nil, err
+	}
 
+	songDTO := &dto.SongDTO{
+		Group: song.Group,
+		Name:  song.Name,
+	}
+
+	for _, lyric := range lyrics {
+		songDTO.Lyrics = append(songDTO.Lyrics, dto.LyricsDTO{
+			VerseNumber: lyric.VerseNumber,
+			Text:        lyric.Text,
+		})
+	}
+
+	return songDTO, nil
+}
+
+func (s *SongService) GetLibrary() (*dto.LibraryDTO, error) {
+	songsDTO := make([]dto.SongDTO, 0)
+
+	songs, err := s.s.GetAllSongs()
+	if err != nil {
+		s.log.Error("Failed to get all songs", logger.Err(err))
+		return nil, err
+	}
+
+	for _, song := range songs {
+		lyrics, err := s.s.GetAllSongLyrics(song.ID)
+		if err != nil {
+			s.log.Error("Failed to get all song lyrics", logger.Err(err))
+			return nil, err
+		}
+
+		songsDTO = append(songsDTO, dto.SongToDTO(song, lyrics))
+	}
+
+	return &dto.LibraryDTO{Songs: songsDTO}, nil
 }
 
 func splitTextIntoVerses(text string) []string {

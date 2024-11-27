@@ -120,14 +120,6 @@ func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
 	}
 
 	queryParams := c.Queries()
-
-	song, err := h.songService.GetSong((uint)(songID))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to get song",
-		})
-	}
-
 	lyrics, err := h.songService.GetLyrics(
 		(uint)(songID),
 		queryParams["limit"],
@@ -138,19 +130,7 @@ func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
 			"error": "Failed to get lyrics",
 		})
 	}
-
-	resp := dto.GetLyricsResponse{
-		SongName: song.Name,
-		Group:    song.Group,
-	}
-
-	for _, lyric := range lyrics {
-		resp.Verses = append(resp.Verses, dto.LyricsInfo{
-			VerseNumber: lyric.VerseNumber,
-			Text:        lyric.Text,
-		})
-	}
-	return c.Status(fiber.StatusOK).JSON(resp)
+	return c.Status(fiber.StatusOK).JSON(lyrics)
 }
 
 func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {
@@ -158,5 +138,11 @@ func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {
 }
 
 func (h *SongsHandlers) GetLibrary(c *fiber.Ctx) error {
-	return nil
+	library, err := h.songService.GetLibrary()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get library",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(library)
 }
