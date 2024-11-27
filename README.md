@@ -21,7 +21,7 @@ STORAGE_PATH=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES
 EXTERNALAPI=http://172.17.0.1:8081
 ```
 
-# Update handler
-Please use numerical values instead of additionalProp, as shown in the example.
+## Update handler - Note
+Please use numerical values instead of additionalProp, as shown in the example:
 
-![alt text](image.png)
+<img src="image.png" width="300" height="250" />
