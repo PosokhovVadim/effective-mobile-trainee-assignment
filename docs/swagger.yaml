@@ -125,7 +125,7 @@ paths:
       parameters:
       - description: Song ID
         in: path
-        name: song_id
+        name: id
         required: true
         type: integer
       - description: Количество куплетов
@@ -190,6 +190,38 @@ paths:
       tags:
       - Songs
   /api/v1/song/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удалене песни по id
+      operationId: delete-song
+      parameters:
+      - description: Song id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Удаление песни
+      tags:
+      - Songs
     put:
       consumes:
       - application/json
@@ -226,39 +258,6 @@ paths:
             additionalProperties: true
             type: object
       summary: Обновление песни
-      tags:
-      - Songs
-  /api/v1/songs/{song_id}:
-    delete:
-      consumes:
-      - application/json
-      description: Удалене песни по id
-      operationId: delete-song
-      parameters:
-      - description: Song id
-        in: path
-        name: song_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Удаление песни
       tags:
       - Songs
 swagger: "2.0"

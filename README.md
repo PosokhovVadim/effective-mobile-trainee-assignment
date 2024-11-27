@@ -19,3 +19,9 @@ STORAGE_PATH=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES
 
 # External API
 EXTERNAL_API_URL=http://host.docker.internal:8081
+```
+
+# Update handler
+Please use numerical values instead of additionalProp, as shown in the example.
+
+![alt text](image-1.png)

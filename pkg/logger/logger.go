@@ -28,7 +28,7 @@ func SetupLogger(cfg *config.Config) (*slog.Logger, error) {
 		return nil, err
 	}
 
-	log = slog.New(slog.NewTextHandler(file, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	log = slog.New(slog.NewTextHandler(file, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	return log, nil
 
 }

@@ -91,7 +91,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Song ID",
-                        "name": "song_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
@@ -239,9 +239,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/v1/songs/{song_id}": {
+            },
             "delete": {
                 "description": "Удалене песни по id",
                 "consumes": [
@@ -259,7 +257,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Song id",
-                        "name": "song_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }

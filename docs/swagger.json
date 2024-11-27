@@ -80,7 +80,7 @@
                     {
                         "type": "integer",
                         "description": "Song ID",
-                        "name": "song_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
@@ -228,9 +228,7 @@
                         }
                     }
                 }
-            }
-        },
-        "/api/v1/songs/{song_id}": {
+            },
             "delete": {
                 "description": "Удалене песни по id",
                 "consumes": [
@@ -248,7 +246,7 @@
                     {
                         "type": "integer",
                         "description": "Song id",
-                        "name": "song_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
