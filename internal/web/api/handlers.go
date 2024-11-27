@@ -40,7 +40,7 @@ func NewSongsHandlers(log *slog.Logger,
 // @Summary Добавление песни
 // @Description Добавление песни с указаым названием и группой
 // @ID add-song
-// @Tags songs
+// @Tags Songs
 // @Accept  json
 // @Produce  json
 // @Param song body dto.CreateSongRequest true "Song"
@@ -106,7 +106,7 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 // @Summary Удаление песни
 // @Description Удалене песни по id
 // @ID delete-song
-// @Tags songs
+// @Tags Songs
 // @Accept  json
 // @Produce  json
 // @Param song_id path int true "Song id"

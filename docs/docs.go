@@ -145,7 +145,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "songs"
+                    "Songs"
                 ],
                 "summary": "Добавление песни",
                 "operationId": "add-song",
@@ -251,7 +251,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "songs"
+                    "Songs"
                 ],
                 "summary": "Удаление песни",
                 "operationId": "delete-song",

@@ -134,7 +134,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "songs"
+                    "Songs"
                 ],
                 "summary": "Добавление песни",
                 "operationId": "add-song",
@@ -240,7 +240,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "songs"
+                    "Songs"
                 ],
                 "summary": "Удаление песни",
                 "operationId": "delete-song",

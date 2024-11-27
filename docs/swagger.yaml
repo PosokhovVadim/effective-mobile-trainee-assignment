@@ -188,7 +188,7 @@ paths:
             type: object
       summary: Добавление песни
       tags:
-      - songs
+      - Songs
   /api/v1/song/{id}:
     put:
       consumes:
@@ -260,5 +260,5 @@ paths:
             type: object
       summary: Удаление песни
       tags:
-      - songs
+      - Songs
 swagger: "2.0"
