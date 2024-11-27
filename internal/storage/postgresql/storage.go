@@ -148,12 +148,13 @@ func (s *PostgresStorage) GetSong(songID uint) (*model.Song, error) {
 	return song, nil
 }
 
-func (s *PostgresStorage) GetAllSongs() ([]model.Song, error) {
-	rows, err := s.db.Query(
-		`SELECT id, group_name, name, link, release_date, inserted_at 
-         FROM songs 
-         ORDER BY inserted_at DESC`,
-	)
+func (s *PostgresStorage) GetAllSongs(
+	filters map[string]string,
+	limit,
+	offset int,
+) ([]model.Song, error) {
+	query, args := s.buildSongQuery(filters, limit, offset)
+	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +163,11 @@ func (s *PostgresStorage) GetAllSongs() ([]model.Song, error) {
 	var songs []model.Song
 	for rows.Next() {
 		var song model.Song
-		if err := rows.Scan(&song.ID, &song.Group, &song.Name, &song.Link, &song.ReleaseDate, &song.InsertedAt); err != nil {
+		if err := rows.Scan(
+			&song.ID, &song.Group,
+			&song.Name, &song.Link,
+			&song.ReleaseDate, &song.InsertedAt,
+		); err != nil {
 			return nil, err
 		}
 		songs = append(songs, song)
@@ -229,4 +234,41 @@ func (s *PostgresStorage) GetAllSongLyrics(songID uint) ([]model.Lyrics, error) 
 	}
 
 	return lyrics, nil
+}
+
+func (s *PostgresStorage) buildSongQuery(
+	filters map[string]string,
+	limit,
+	offset int,
+) (string, []interface{}) {
+	query := `SELECT id, group_name, name, release_date, link, inserted_at 
+              FROM songs WHERE 1 = 1`
+
+	var args []interface{}
+	argIndex := 1
+
+	if group, ok := filters["group"]; ok {
+		query += fmt.Sprintf(" AND group_name ILIKE $%d", argIndex)
+		args = append(args, "%"+group+"%")
+		argIndex++
+	}
+
+	if name, ok := filters["name"]; ok {
+		query += fmt.Sprintf(" AND name ILIKE $%d", argIndex)
+		args = append(args, "%"+name+"%")
+		argIndex++
+	}
+
+	if releaseDate, ok := filters["release_date"]; ok {
+		query += fmt.Sprintf(" AND release_date = $%d", argIndex)
+		args = append(args, releaseDate)
+		argIndex++
+	}
+
+	if limit > 0 {
+		query += fmt.Sprintf(" ORDER BY release_date LIMIT $%d OFFSET $%d", argIndex, argIndex+1)
+		args = append(args, limit, offset)
+	}
+
+	return query, args
 }

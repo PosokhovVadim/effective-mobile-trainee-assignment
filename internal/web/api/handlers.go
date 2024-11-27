@@ -138,7 +138,16 @@ func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {
 }
 
 func (h *SongsHandlers) GetLibrary(c *fiber.Ctx) error {
-	library, err := h.songService.GetLibrary()
+	queryParams := c.Queries()
+	library, err := h.songService.GetLibrary(
+		map[string]string{
+			"group":        queryParams["group"],
+			"name":         queryParams["name"],
+			"release_date": queryParams["release_date"],
+		},
+		queryParams["limit"],
+		queryParams["offset"],
+	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to get library",

@@ -15,7 +15,7 @@ type ISong interface {
 	AddSong(group, name, link string, releaseDate time.Time, text string) (uint, error)
 	DeleteSong(songID uint) error
 	GetLyrics(songID uint, limit, offset string) (*dto.SongDTO, error)
-	GetLibrary() (*dto.LibraryDTO, error)
+	GetLibrary(filters map[string]string, limit, offset string) (*dto.LibraryDTO, error)
 }
 
 type SongService struct {
@@ -30,7 +30,13 @@ func NewSongService(log *slog.Logger, s storage.Storage) *SongService {
 	}
 }
 
-func (s *SongService) AddSong(group, name, link string, releaseDate time.Time, text string) (uint, error) {
+func (s *SongService) AddSong(
+	group,
+	name,
+	link string,
+	releaseDate time.Time,
+	text string,
+) (uint, error) {
 	var verses []string
 	if len(text) != 0 {
 		verses = splitTextIntoVerses(text)
@@ -60,23 +66,7 @@ func (s *SongService) DeleteSong(songID uint) error {
 }
 
 func (s *SongService) GetLyrics(songID uint, limit, offset string) (*dto.SongDTO, error) {
-	if limit == "" {
-		limit = "10"
-	}
-	if offset == "" {
-		offset = "0"
-	}
-	limitInt, err := strconv.Atoi(limit)
-	if err != nil {
-		s.log.Error("Failed to convert limit to int", logger.Err(err))
-		return nil, err
-	}
-	offsetInt, err := strconv.Atoi(offset)
-	if err != nil {
-		s.log.Error("Failed to convert offset to int", logger.Err(err))
-		return nil, err
-	}
-
+	limitInt, offsetInt := getLimitAndOffset(limit, offset)
 	song, err := s.s.GetSong(songID)
 	if err != nil {
 		s.log.Error("Failed to get song", logger.Err(err))
@@ -104,10 +94,15 @@ func (s *SongService) GetLyrics(songID uint, limit, offset string) (*dto.SongDTO
 	return songDTO, nil
 }
 
-func (s *SongService) GetLibrary() (*dto.LibraryDTO, error) {
+func (s *SongService) GetLibrary(
+	filters map[string]string,
+	limit,
+	offset string,
+) (*dto.LibraryDTO, error) {
+	limitInt, offsetInt := getLimitAndOffset(limit, offset)
 	songsDTO := make([]dto.SongDTO, 0)
 
-	songs, err := s.s.GetAllSongs()
+	songs, err := s.s.GetAllSongs(filters, limitInt, offsetInt)
 	if err != nil {
 		s.log.Error("Failed to get all songs", logger.Err(err))
 		return nil, err
@@ -140,4 +135,16 @@ func splitTextIntoVerses(text string) []string {
 		}
 	}
 	return filtered
+}
+
+func getLimitAndOffset(limit, offset string) (int, int) {
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		return 10, 0
+	}
+	offsetInt, err := strconv.Atoi(offset)
+	if err != nil {
+		return 10, 0
+	}
+	return limitInt, offsetInt
 }
