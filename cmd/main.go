@@ -70,7 +70,7 @@ func run() error {
 // @externalDocs.url			https://swagger.io/resources/open-api/
 func main() {
 	if err := run(); err != nil {
-		panic(err)
+		fmt.Printf("error running service: %v\n", err)
 		os.Exit(1)
 	}
 }
