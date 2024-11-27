@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 type FetchData struct {
@@ -14,7 +15,13 @@ type FetchData struct {
 }
 
 func FetchSong(externalAPI, group, song string) (*FetchData, error) {
-	url := fmt.Sprintf("%s/info?group=%s&song=%s", externalAPI, group, song)
+	url := fmt.Sprintf(
+		"%s/info?group=%s&song=%s",
+		externalAPI,
+		url.QueryEscape(group),
+		url.QueryEscape(song),
+	)
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, errors.New("failed to connect to external API")
