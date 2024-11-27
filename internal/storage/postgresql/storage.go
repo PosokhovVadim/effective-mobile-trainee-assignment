@@ -109,7 +109,7 @@ func (s *PostgresStorage) AddSong(song model.Song, verses []string) (uint, error
 
 		for i, verse := range verses {
 			_, err = tx.Exec(
-				`INSERT INTO verses (song_id, verse_number, verse_text) 
+				`INSERT INTO lyrics (song_id, verse_number, text) 
                  VALUES ($1, $2, $3)`,
 				songID, i+1, verse,
 			)

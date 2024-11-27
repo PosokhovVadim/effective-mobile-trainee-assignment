@@ -73,7 +73,7 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 		})
 	}
 
-	releaseDate, err := time.Parse("2006-01-02", fetchData.ReleaseDate)
+	releaseDate, err := time.Parse("02.01.2006", fetchData.ReleaseDate)
 	if err != nil {
 		h.log.Debug("Failed to parse release date", logger.Err(err))
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
