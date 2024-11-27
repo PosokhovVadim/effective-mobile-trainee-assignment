@@ -70,7 +70,7 @@ func run() error {
 // @externalDocs.url			https://swagger.io/resources/open-api/
 func main() {
 	if err := run(); err != nil {
-		fmt.Errorf("%v\n", err)
+		panic(err)
 		os.Exit(1)
 	}
 }

@@ -74,7 +74,11 @@ func (s *PostgresStorage) WithTransaction(fn func(tx *sql.Tx) error) error {
 
 	if err := fn(tx); err != nil {
 		s.log.Error("Transaction failed", logger.Err(err))
-		tx.Rollback()
+		err = tx.Rollback()
+		if err != nil {
+			return err
+		}
+
 		return err
 	}
 
