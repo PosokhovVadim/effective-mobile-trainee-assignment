@@ -17,7 +17,6 @@ import (
 	_ "songs_lib/docs"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 )
 
 type SongsHandlers struct {
@@ -53,14 +52,14 @@ func NewSongsHandlers(log *slog.Logger,
 func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 	var req dto.CreateSongRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Debug("Failed to parse request body", logger.Err(err))
+		h.log.Debug("Failed to parse request body", logger.Err(err))
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body",
 		})
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		log.Debug("Failed to validate request body", logger.Err(err))
+		h.log.Debug("Failed to validate request body", logger.Err(err))
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body",
 		})
@@ -68,7 +67,7 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 
 	fetchData, err := web.FetchSong(h.externalAPI, req.Group, req.Name)
 	if err != nil {
-		log.Debug("Failed to fetch song data", logger.Err(err))
+		h.log.Debug("Failed to fetch song data", logger.Err(err))
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch song data",
 		})
@@ -76,7 +75,7 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 
 	releaseDate, err := time.Parse("2006-01-02", fetchData.ReleaseDate)
 	if err != nil {
-		log.Debug("Failed to parse release date", logger.Err(err))
+		h.log.Debug("Failed to parse release date", logger.Err(err))
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to parse release date",
 		})
@@ -151,7 +150,7 @@ func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
 // @Failure 500 {object} map[string]interface{}
 // @Router /api/v1/lyrics/{id} [get]
 func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
-	param := c.Params("song_id")
+	param := c.Params("id")
 
 	songID, err := strconv.Atoi(param)
 	if err != nil {
@@ -167,6 +166,11 @@ func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
 		queryParams["offset"],
 	)
 	if err != nil {
+		if errors.Is(err, storage.ErrSongNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "Song not found",
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to get lyrics",
 		})

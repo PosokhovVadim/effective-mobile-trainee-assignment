@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
@@ -158,6 +159,9 @@ func (s *PostgresStorage) GetSong(songID uint) (*model.Song, error) {
 	).Scan(
 		&song.ID, &song.Group, &song.Name, &song.Link, &song.ReleaseDate, &song.InsertedAt,
 	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, storage.ErrSongNotFound
+	}
 	if err != nil {
 		return nil, err
 	}

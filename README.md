@@ -8,7 +8,7 @@ POSTGRES_PASSWORD=postgres
 POSTGRES_DB=songs_db
 
 # Service
-SERVICE_NAME=song_library_service
+SERVICENAME=song_library_service
 ENV=local
 
 HTTP_PORT=8080
@@ -18,7 +18,7 @@ HTTP_TIMEOUT=5s
 STORAGE_PATH=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
 
 # External API
-EXTERNAL_API_URL=http://host.docker.internal:8081
+EXTERNALAPI=http://172.17.0.1:8081
 ```
 
 # Update handler

@@ -32,8 +32,7 @@ func run() error {
 	}
 
 	log.Info("Config read success")
-
-	app, err := app.NewApp(log, cfg.HTTP, cfg.Storage, cfg.ExternalAPIURL)
+	app, err := app.NewApp(log, cfg.HTTP, cfg.Storage, cfg.ExternalAPI)
 	if err != nil {
 		log.Error("error creating app: %v", err)
 		return err

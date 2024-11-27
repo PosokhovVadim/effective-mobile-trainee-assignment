@@ -165,11 +165,14 @@ func splitTextIntoVerses(text string) []string {
 func getLimitAndOffset(limit, offset string) (int, int) {
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
-		return 10, 0
+		limitInt = 10
 	}
+
 	offsetInt, err := strconv.Atoi(offset)
 	if err != nil {
-		return 10, 0
+		offsetInt = 0
 	}
+
 	return limitInt, offsetInt
 }
+

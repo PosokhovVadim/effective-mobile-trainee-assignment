@@ -7,10 +7,6 @@ import (
 	"net/http"
 )
 
-type ExternalAPI struct {
-
-}
-
 type FetchData struct {
 	Link        string `json:"link"`
 	ReleaseDate string `json:"releaseDate"`
