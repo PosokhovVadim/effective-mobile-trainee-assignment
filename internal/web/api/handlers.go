@@ -12,6 +12,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
+	_ "songs_lib/docs"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 )
@@ -35,6 +37,17 @@ func NewSongsHandlers(log *slog.Logger,
 	}
 }
 
+// @Summary Добавление песни
+// @Description Добавление песни с указаым названием и группой
+// @ID add-song
+// @Tags songs
+// @Accept  json
+// @Produce  json
+// @Param song body dto.CreateSongRequest true "Song"
+// @Success 201 {object} dto.CreateSongResponse
+// @Failure 400 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
+// @Router /api/v1/song [post]
 func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 	var req dto.CreateSongRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -90,6 +103,17 @@ func (h *SongsHandlers) AddSong(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary Удаление песни
+// @Description Удалене песни по id
+// @ID delete-song
+// @Tags songs
+// @Accept  json
+// @Produce  json
+// @Param song_id path int true "Song id"
+// @Success 204 {object} fiber.Map
+// @Failure 400 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
+// @Router /api/v1/songs/{song_id} [delete]
 func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
 	param := c.Params("song_id")
 
@@ -105,11 +129,20 @@ func (h *SongsHandlers) DeleteSong(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Song deleted successfully",
-	})
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
+// @Summary Получение текста песни
+// @Description Получение текста песни с пагинацией по куплетам
+// @ID get-lyrics
+// @Tags Lyrics
+// @Param song_id path int true "Song ID"
+// @Param limit query int false "Количество куплетов"
+// @Param offset query int false "Смещение для пагинации"
+// @Success 200 {array} dto.LyricsInfo
+// @Failure 400 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
+// @Router /api/v1/lyrics/{id} [get]
 func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
 	param := c.Params("song_id")
 
@@ -134,6 +167,18 @@ func (h *SongsHandlers) GetLyrics(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(lyrics)
 }
 
+// @Summary Обновление песни
+// @Description Обновление полей песни и текста куплетов
+// @ID update-song
+// @Tags Songs
+// @Accept json
+// @Produce json
+// @Param id path int true "Song ID"
+// @Param updates body model.SongUpdate true "Updated Fields"
+// @Success 204 {object} fiber.Map
+// @Failure 400 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
+// @Router /api/v1/song/{id} [put]
 func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {
 	param := c.Params("id")
 
@@ -151,19 +196,29 @@ func (h *SongsHandlers) UpdateSong(c *fiber.Ctx) error {
 		})
 	}
 
-	updatedID, err := h.songService.UpdateSong(uint(songID), updates)
+	_, err = h.songService.UpdateSong(uint(songID), updates)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update song",
 		})
 	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"id": updatedID,
-	})
+	return c.SendStatus(fiber.StatusNoContent)
 
 }
 
+// @Summary Получение библиотеки песен
+// @Description Получение списка песен с фильтрацией и пагинацией
+// @ID get-library
+// @Tags Songs
+// @Param group query string false "Название группы"
+// @Param name query string false "Название песни"
+// @Param release_date query string false "Дата релиза"
+// @Param limit query int false "Количество записей на странице"
+// @Param offset query int false "Смещение для пагинации"
+// @Success 200 {object} dto.LibraryResponse
+// @Failure 400 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
+// @Router /api/v1/library [get]
 func (h *SongsHandlers) GetLibrary(c *fiber.Ctx) error {
 	queryParams := c.Queries()
 	library, err := h.songService.GetLibrary(

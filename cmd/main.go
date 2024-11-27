@@ -7,6 +7,8 @@ import (
 	"songs_lib/internal/app"
 	"songs_lib/pkg/logger"
 
+	_ "songs_lib/docs"
+
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -47,6 +49,25 @@ func run() error {
 
 }
 
+//	@title			Song Library Api
+//	@version		1.0
+//	@description	This is a sample server celler server.
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@host		localhost:8080
+//	@BasePath	/api/v1
+
+//	@securityDefinitions.basic	BasicAuth
+
+// @externalDocs.description	OpenAPI
+// @externalDocs.url			https://swagger.io/resources/open-api/
 func main() {
 	if err := run(); err != nil {
 		fmt.Errorf("%v\n", err)
